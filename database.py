@@ -14,6 +14,7 @@ DB_CONFIG = {
     "database": os.getenv("DB_NAME"),
     "host": os.getenv("DB_HOST"),
     "port": int(os.getenv("DB_PORT", 5432)),
+    "ssl": "require",
 }
 
 @asynccontextmanager
