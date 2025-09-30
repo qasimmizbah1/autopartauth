@@ -24,12 +24,15 @@ async def lifespan(app: FastAPI):
     async with app.state.pool.acquire() as conn:
     # Create users table
         await conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username TEXT UNIQUE NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
+                CREATE TABLE IF NOT EXISTS app_user ( 
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                email CITEXT UNIQUE NOT NULL, 
+                password_hash TEXT NOT NULL, 
+                role TEXT NOT NULL CHECK (role IN ('buyer','supplier','admin')), 
+                is_active BOOLEAN NOT NULL DEFAULT TRUE, 
+                created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+                )
         """)
 
         # Create verification_tokens table
