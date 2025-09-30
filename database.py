@@ -100,9 +100,9 @@ async def lifespan(app: FastAPI):
         """)
         
         demo_users = [
-            ("qasimmizbah@gmail.com", "Admin123", "admin", 1),
-            ("muskan@techbeeps.co.in", "Admin123", "buyer", 1),
-            ("mprofessionalwfh@gmail.com", "Admin123", "supplier", 1),
+            ("qasimmizbah@gmail.com", "Admin123", "admin", True),
+            ("muskan@techbeeps.co.in", "Admin123", "buyer", True),
+            ("mprofessionalwfh@gmail.com", "Admin123", "supplier", True),
         ]
 
         for email, password, role, is_active in demo_users:
