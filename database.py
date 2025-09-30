@@ -17,6 +17,8 @@ DB_CONFIG = {
     "ssl": "require",
 }
 
+print("DB CONFIG:", DB_CONFIG)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.pool = await asyncpg.create_pool(**DB_CONFIG)
