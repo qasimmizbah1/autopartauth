@@ -100,6 +100,13 @@ async def lifespan(app: FastAPI):
         """)
 
         await conn.execute("""
+                CREATE TABLE IF NOT EXISTS  vehicle_make ( 
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                name TEXT UNIQUE NOT NULL 
+                )
+        """)
+
+        await conn.execute("""
                 CREATE TABLE IF NOT EXISTS vehicle_model ( 
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
                 make_id UUID NOT NULL REFERENCES vehicle_make(id), 
