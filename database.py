@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
 
         await conn.execute("CREATE EXTENSION IF NOT EXISTS citext;")
-        
+
         await conn.execute("""
                 CREATE TABLE IF NOT EXISTS app_user ( 
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
             CREATE TABLE IF NOT EXISTS verification_tokens (
                 id SERIAL PRIMARY KEY,
                 token VARCHAR(255) NOT NULL UNIQUE,
-                user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                user_id INT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
                 expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             )
