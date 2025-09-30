@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, BackgroundTasks, Body, Depends, HTTPException
+from typing import List, Dict
 from models import UserRegister, UserLogin, UserOut, ForgotPasswordRequest, ResetPasswordRequest
 from services.login_service import user_login_service
 from services.register_service import user_register_service, user_verify_service, user_resend_verification_service
