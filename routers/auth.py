@@ -61,10 +61,11 @@ async def reset_password(data: ResetPasswordRequest, request: Request):
 
 @router.get("/viewusers", response_model=List[Dict])
 async def view_users(request: Request):
+    if not hasattr(request.app.state, "pool"):
+        raise HTTPException(status_code=500, detail="Database pool not initialized")
     try:
         async with request.app.state.pool.acquire() as conn:
             rows = await conn.fetch("SELECT * FROM app_user")
-            users = [dict(row) for row in rows]  # convert asyncpg Record to dict
-        return users
+            return [dict(row) for row in rows]  # convert asyncpg Record to dict
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
