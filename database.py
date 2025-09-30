@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
+import hashlib
 
 
 load_dotenv()
@@ -98,6 +99,19 @@ async def lifespan(app: FastAPI):
            CREATE INDEX IF NOT EXISTS system_log_meta_gin ON system_log USING GIN (meta)
         """)
         
+        demo_users = [
+            ("qasimmizbah@gmail.com", "Admin123", "admin", "TRUE"),
+            ("muskan@techbeeps.co.in", "Admin123", "buyer", "TRUE"),
+            ("mprofessionalwfh@gmail.com", "Admin123", "supplier", "TRUE"),
+        ]
+
+        for email, password, role, is_active in demo_users:
+            password_hash = hashlib.sha256(password.encode()).hexdigest()
+            await conn.execute("""
+                INSERT INTO app_user (email, password_hash, role, is_active)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (email) DO NOTHING
+            """, email, password_hash, role, is_active)
 
 
     yield
