@@ -6,7 +6,7 @@ from services.logs_service import write_log
 
 async def user_login_service(user, request: Request):
     async with request.app.state.pool.acquire() as conn:
-        db_user = await conn.fetchrow("SELECT * FROM app_user WHERE is_active='true' and email=$1", user.email)
+        db_user = await conn.fetchrow("SELECT * FROM app_user WHERE is_active=TRUE and email=$1", user.email)
         if not db_user or not verify_password(user.password, db_user["password_hash"]):
             await write_log(
                 request=request,
