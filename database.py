@@ -98,6 +98,146 @@ async def lifespan(app: FastAPI):
         await conn.execute("""
            CREATE INDEX IF NOT EXISTS system_log_meta_gin ON system_log USING GIN (meta)
         """)
+
+        await conn.execute("""
+                CREATE TABLE IF NOT EXISTS vehicle_model ( 
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                make_id UUID NOT NULL REFERENCES vehicle_make(id), 
+                name TEXT NOT NULL, 
+                UNIQUE(make_id, name) 
+            )
+        """)
+        await conn.execute("""
+                CREATE TABLE IF NOT EXISTS vehicle_trim ( 
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                model_id UUID NOT NULL REFERENCES vehicle_model(id), 
+                year_from SMALLINT, 
+                year_to SMALLINT, 
+                trim TEXT
+                )
+        """)
+        await conn.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS vehicle_trim_unique_idx 
+                    ON vehicle_trim (
+                    model_id, 
+                    COALESCE(year_from, 0), 
+                    COALESCE(year_to, 0), 
+                    COALESCE(trim, '')
+                    )
+        """)
+        await conn.execute("""
+                CREATE TABLE IF NOT EXISTS part_request (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL REFERENCES app_user(id),
+                title TEXT NOT NULL,
+                description TEXT,
+                urgency TEXT CHECK (urgency IN ('low','normal','high','critical')) NOT NULL,
+                required_by_date DATE,
+                vehicle_make TEXT NOT NULL,
+                vehicle_model TEXT NOT NULL,
+                vehicle_model_trim TEXT NOT NULL,
+                attachment TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+        """)
+        await conn.execute("""
+            CREATE TABLE  IF NOT EXISTS supplier_profile ( 
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+            user_id UUID NOT NULL REFERENCES app_user(id) UNIQUE, 
+            supplier_name varchar(255),
+            company_name TEXT, 
+            kyc_status TEXT NOT NULL DEFAULT 'pending' CHECK (kyc_status IN 
+            ('pending','approved','rejected')), 
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+            )
+        """)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS buyer_profile (
+                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                    user_id UUID NOT NULL REFERENCES app_user(id) UNIQUE, 
+                    buyer_name varchar(255),
+                    company_name TEXT, 
+                    vat_number TEXT, 
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+            )
+        """)
+        await conn.execute("""
+            CREATE TABLE  IF NOT EXISTS supplier_profile ( 
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+            user_id UUID NOT NULL REFERENCES app_user(id) UNIQUE, 
+            supplier_name varchar(255),
+            company_name TEXT, 
+            kyc_status TEXT NOT NULL DEFAULT 'pending' CHECK (kyc_status IN 
+            ('pending','approved','rejected')), 
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+            )
+        """)
+        await conn.execute("""
+                        CREATE TABLE  IF NOT EXISTS buyer_address ( 
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            buyer_id UUID NOT NULL REFERENCES buyer_profile(id),  
+            line1 TEXT NOT NULL, 
+            line2 TEXT, 
+            city TEXT, 
+            province TEXT, 
+            postal_code TEXT, 
+            country CHAR(2) NOT NULL DEFAULT 'ZA' 
+            )
+        """)
+        await conn.execute("""
+                CREATE TABLE IF NOT EXISTS quote ( 
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                    request_id UUID NOT NULL REFERENCES part_request(id) ON DELETE CASCADE, 
+                    supplier_id UUID NOT NULL REFERENCES supplier_profile(id), 
+                    price_cents BIGINT NOT NULL CHECK (price_cents >= 0), 
+                    currency CHAR(3) NOT NULL DEFAULT 'ZAR', 
+                    eta_days SMALLINT, 
+                    terms TEXT, 
+                    is_accepted BOOLEAN NOT NULL DEFAULT FALSE, 
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+                    )
+        """)
+        await conn.execute("""
+            CREATE TABLE  IF NOT EXISTS supplier_profile ( 
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+            user_id UUID NOT NULL REFERENCES app_user(id) UNIQUE, 
+            supplier_name varchar(255),
+            company_name TEXT, 
+            kyc_status TEXT NOT NULL DEFAULT 'pending' CHECK (kyc_status IN 
+            ('pending','approved','rejected')), 
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+            )
+        """)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS buyer_profile (
+                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+                    user_id UUID NOT NULL REFERENCES app_user(id) UNIQUE, 
+                    buyer_name varchar(255),
+                    company_name TEXT, 
+                    vat_number TEXT, 
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+            )
+        """)
+        await conn.execute("""
+            CREATE TABLE  IF NOT EXISTS supplier_profile ( 
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+            user_id UUID NOT NULL REFERENCES app_user(id) UNIQUE, 
+            supplier_name varchar(255),
+            company_name TEXT, 
+            kyc_status TEXT NOT NULL DEFAULT 'pending' CHECK (kyc_status IN 
+            ('pending','approved','rejected')), 
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(), 
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now() 
+            )
+        """)
+
+        
         
         demo_users = [
             ("qasimmizbah@gmail.com", "Admin123", "admin", True),
