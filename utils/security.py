@@ -12,6 +12,8 @@ load_dotenv()
 # password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM =  os.getenv("JWT_ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")

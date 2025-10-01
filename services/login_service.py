@@ -7,19 +7,29 @@ from services.logs_service import write_log
 async def user_login_service(user, request: Request):
     async with request.app.state.pool.acquire() as conn:
         db_user = await conn.fetchrow("SELECT * FROM app_user WHERE is_active=true and email=$1", user.email)
-        print("User found:", db_user)  # Debugging line
-        if not db_user or not verify_password(user.password, db_user["password_hash"]):
-            await write_log(
-                request=request,
-                action="LOGIN_FAILED",
-                level="WARNING",
-                user_id=None,
-                path=str(request.url.path),
-                ip=request.client.host if request.client else None,
-                user_agent=request.headers.get("user-agent"),
-                meta={"email": user.email}
-            )
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+        if not db_user:
+            raise HTTPException(status_code=401, detail="User not found or inactive")
+    
+         # Verify password
+    try:
+        if not verify_password(user.password, db_user["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid password")
+    except Exception as e:
+        print("Password verification error:", str(e))
+        raise HTTPException(status_code=500, detail="Password hash verification failed")
+
+        # if not db_user or not verify_password(user.password, db_user["password_hash"]):
+        #     await write_log(
+        #         request=request,
+        #         action="LOGIN_FAILED",
+        #         level="WARNING",
+        #         user_id=None,
+        #         path=str(request.url.path),
+        #         ip=request.client.host if request.client else None,
+        #         user_agent=request.headers.get("user-agent"),
+        #         meta={"email": user.email}
+        #     )
+        #     raise HTTPException(status_code=401, detail="Invalid credentials")
 
         
         token_expires = timedelta(minutes=3600)
