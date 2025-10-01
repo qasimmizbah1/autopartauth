@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
 import hashlib
+from utils.security import hash_password 
 
 
 load_dotenv()
@@ -246,19 +247,24 @@ async def lifespan(app: FastAPI):
 
         
         
-        demo_users = [
-            ("qasimmizbah@gmail.com", "Admin123", "admin", True),
-            ("muskan@techbeeps.co.in", "Admin123", "buyer", True),
-            ("mprofessionalwfh@gmail.com", "Admin123", "supplier", True),
-        ]
+        # demo_users = [
+        #     ("qasimmizbah@gmail.com", "Admin123", "admin", True),
+        #     ("muskan@techbeeps.co.in", "Admin123", "buyer", True),
+        #     ("mprofessionalwfh@gmail.com", "Admin123", "supplier", True),
+        # ]
 
-        for email, password, role, is_active in demo_users:
-            password_hash = hashlib.sha256(password.encode()).hexdigest()
-            await conn.execute("""
-                INSERT INTO app_user (email, password_hash, role, is_active)
-                VALUES ($1, $2, $3, $4)
-                ON CONFLICT (email) DO NOTHING
-            """, email, password_hash, role, is_active)
+        
+
+        await conn.execute("""TRUNCATE TABLE app_user RESTART IDENTITY CASCADE;""")
+
+        # for email, password, role, is_active in demo_users:
+        #     #password_hash = hashlib.sha256(password.encode()).hexdigest()
+        #     password_hash = hash_password(password)
+        #     await conn.execute("""
+        #         INSERT INTO app_user (email, password_hash, role, is_active)
+        #         VALUES ($1, $2, $3, $4)
+        #         ON CONFLICT (email) DO NOTHING
+        #     """, email, password_hash, role, is_active)
 
 
     yield
