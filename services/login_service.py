@@ -6,6 +6,6 @@ from services.logs_service import write_log
 
 async def user_login_service(user, request: Request):
     async with request.app.state.pool.acquire() as conn:
-        db_user = await conn.fetchrow("SELECT * FROM app_user WHERE is_active=TRUE and email=$1", user.email)
+        db_user = await conn.fetchrow("SELECT * FROM app_user WHERE is_active=true and email=$1", user.email)
         print("User found:", db_user)  # Debugging line
        
